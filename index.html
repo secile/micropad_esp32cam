@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>micro:pad</title>
+
+<style type="text/css">
+* {
+    font-size: 3vmin;
+}
+</style>
+
+<body>
+    <div style="position:absolute; left:10px; top:10px;">
+        <button type="button" id="connect"    onclick="connectBLE()">🚩</button>
+        <button type="button" id="disconnect" onclick="disconnectBLE()">🛑</button>
+    </div>
+    <canvas id="canvas"></canvas>
+</body>
+
+<script>
+
+function connectBLE() {
+	console.log("connectBLE");
+}
+
+function disconnectBLE() {
+	console.log("disconnectBLE");
+}
+
+let canvas, context;
+
+setup();
+
+// start animation.
+requestAnimationFrame(updateFrame);
+
+window.addEventListener('resize', () => setup());
+
+function setup() {
+    canvas = document.querySelector('#canvas');
+    context = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+function update() {
+    console.log("update");
+}
+
+function draw() {    
+    // clear screen.
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.style.backgroundColor = "AliceBlue";
+}
+
+// update frame.
+function updateFrame() {
+    update();
+    draw();
+    requestAnimationFrame(updateFrame);
+}
+
+</script>
