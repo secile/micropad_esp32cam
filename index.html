@@ -6,6 +6,10 @@
 * {
     font-size: 3vmin;
 }
+html {
+    touch-action:none;
+    user-select: none;
+}
 </style>
 
 <body>
@@ -428,6 +432,9 @@ setup();
 requestAnimationFrame(updateFrame);
 
 window.addEventListener('resize', () => setup());
+
+// suppress context menu.
+document.oncontextmenu = () => false;
 
 function setup() {
     canvas = document.querySelector('#canvas');
