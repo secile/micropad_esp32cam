@@ -106,7 +106,194 @@ function onTxCharacteristicValueChanged(event) {
 }
 
 //--- user interface.
+
+class Stick {
+    // 初期化
+    constructor(canvas, context) {
+        this.canvas = canvas;
+        this.context = context;
+
+        // 中心座標。
+        this.centerX = this.canvas.width / 2;
+        this.centerY = this.canvas.height / 2;
+
+        // センター原点での座標。
+        this.posX = 0;
+        this.posY = 0;
+
+        // 円の表示。
+        this.largeRadiusScale = 0.1;
+        this.smallRadiusScale = 0.05;
+        this.largeRadiusStyle = 'gray';
+        this.smallRadiusStyle = 'blue';
+
+        // スティックの状態。
+        this.stickAngle = 0; // 0.0-2pi。(X座標から時計回りラジアン)
+        this.stickPower = 0; // 0.0-1.0。
+
+        this.onChange = () => {}; // null guard.
+
+        // マウスイベントのインストール。
+        this.installMouseEvent();
+    }
+
+    // mousemove, mousedown, mouseupイベントのインストール。
+    // マルチタッチ対応できるように、pointerイベントに変更。
+    installMouseEvent() {
+        this.mousedown = false;
+        this.pointerId = 0;
+
+        window.addEventListener('pointerdown', ev => {
+            if (this.mouse_Drag(ev.offsetX, ev.offsetY, false)) { // clientX, clientYだとフォームの分ずれた。
+                this.mousedown = true;
+                this.pointerId = ev.pointerId;
+                this.mouse_Down();
+            }
+        });
+
+        window.addEventListener('pointermove', ev => {
+            if (this.mousedown && this.pointerId == ev.pointerId) {
+                this.mouse_Drag(ev.offsetX, ev.offsetY, true);
+                //console.log(this.name, "this.stickAngle", this.stickAngle, "this.stickPower", this.stickPower);
+            }
+        });
+
+        window.addEventListener('pointerup', ev => {
+            if (this.pointerId == ev.pointerId) {
+                this.mousedown = false;
+                this.pointerId = 0;
+                this.mouse_Up();
+                //console.log(this.name, "this.stickAngle", this.stickAngle, "this.stickPower", this.stickPower);
+            }
+        });
+    }
+
+    update() {
+        // do nothing.
+    }
+
+    mouse_Down() {
+        //console.log("mouse_Down");
+    }
+
+    mouse_Drag(x, y, updateStick) {
+        //console.log("mouse_Drag");
+
+        // センター原点での座標に変換。
+        const local_x =  x - this.centerX;
+        const local_y =  y - this.centerY;
+        const local_x2 = local_x * local_x;
+        const local_y2 = local_y * local_y;
+
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        const radius_max = (width > height)? width * this.largeRadiusScale: height * this.largeRadiusScale;
+        const radius = Math.min(Math.sqrt(local_x2 + local_y2), radius_max);
+        
+        // 大きな円の内側か？
+        const inside_radius_max = (local_x2 + local_y2 < radius_max * radius_max);
+
+        if (updateStick) {
+            // 少し動くごとにonChangeせず、変化したらonChangedする。
+            let changed = false;
+
+            // powerとangleを求める。
+            let power = radius / radius_max;
+            let angle = Math.atan2(local_y, local_x); // X座標から時計回りラジアン。-π～+π。
+            if (angle < 0) angle += 2*Math.PI;        // 0～2πに変換。
+
+            // 画面の表示位置の更新。
+            this.posX = Math.cos(angle) * radius;
+            this.posY = Math.sin(angle) * radius;
+
+            // powerは3段階に制限する。
+            if      (power < 0.33)  this.stickPower = 0;
+            else if (power < 0.66)  this.stickPower = 0.5;
+            else this.stickPower = 1;
+            if (this.stickPower_Prev != this.stickPower) {
+                this.stickPower_Prev = this.stickPower;
+                changed = true;
+            }
+
+            // powerある時だけangle判定。
+            if (this.stickPower != 0) {
+                // angleは8方向のみに制限する。
+                if      (1  * Math.PI / 8 <= angle && angle < 3  * Math.PI / 8) this.stickAngle = 2  * Math.PI / 8;
+                else if (3  * Math.PI / 8 <= angle && angle < 5  * Math.PI / 8) this.stickAngle = 4  * Math.PI / 8;
+                else if (5  * Math.PI / 8 <= angle && angle < 7  * Math.PI / 8) this.stickAngle = 6  * Math.PI / 8;
+                else if (7  * Math.PI / 8 <= angle && angle < 9  * Math.PI / 8) this.stickAngle = 8  * Math.PI / 8;
+                else if (9  * Math.PI / 8 <= angle && angle < 11 * Math.PI / 8) this.stickAngle = 10 * Math.PI / 8;
+                else if (11 * Math.PI / 8 <= angle && angle < 13 * Math.PI / 8) this.stickAngle = 12 * Math.PI / 8;
+                else if (13 * Math.PI / 8 <= angle && angle < 15 * Math.PI / 8) this.stickAngle = 14 * Math.PI / 8;
+                else this.stickAngle = 0;
+                this.stickAngle = Math.round(this.stickAngle * 100) / 100; // 3.14のように少数第2位で四捨五入。
+                if (this.stickAngle_Prev != this.stickAngle) {
+                    this.stickAngle_Prev = this.stickAngle;
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                this.onChange();
+            }
+        }
+
+        return inside_radius_max;
+    }
+
+    mouse_Up() {
+        //console.log("mouse_Up");
+
+        // スティックの状態を原点に戻す。
+        this.stickPower = 0;
+        this.stickAngle = 0;
+
+        // 表示位置を原点に戻す。
+        this.posX = 0;
+        this.posY = 0;
+
+        this.onChange();
+    }
+
+    draw() {
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+
+        // 大きな円をセンターに。
+        this.context.save();
+        {
+            this.context.fillStyle = this.largeRadiusStyle;
+            this.context.globalAlpha = 0.5; // 50%の透明度
+
+            this.context.translate(this.centerX, this.centerY)
+            this.context.beginPath();
+            const radius = (width > height)? width * this.largeRadiusScale: height * this.largeRadiusScale;
+            this.context.arc(0, 0, radius, 0, 2 * Math.PI);
+            this.context.closePath();
+            this.context.fill();
+        }
+        this.context.restore();
+
+        // 小さな円をセンター中心で(pos_x, pos_y)に。
+        this.context.save();
+        {
+            this.context.fillStyle = this.smallRadiusStyle;
+            this.context.globalAlpha = 0.5; // 50%の透明度
+
+            this.context.translate(this.centerX, this.centerY)
+            this.context.translate(this.posX, this.posY)
+            this.context.beginPath();
+            const radius = (width > height)? width * this.smallRadiusScale: height * this.smallRadiusScale;
+            this.context.arc(0, 0, radius, 0, 2 * Math.PI);
+            this.context.closePath();
+            this.context.fill();
+        }
+        this.context.restore();
+    }
+}
+
 let canvas, context;
+let controlls = [];
 
 setup();
 
@@ -120,16 +307,46 @@ function setup() {
     context = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    
+    initControl();
+}
+
+function initControl() {
+    const stick1 = new Stick(canvas, context);
+    stick1.centerX = canvas.width * 0.25;
+    stick1.onChange = () => {
+        const cmd = `s1,${stick1.stickAngle},${stick1.stickPower}`;
+        console.log(cmd);
+        this.sendCmd(cmd)
+    };
+
+    const stick2 = new Stick(canvas, context);
+    stick2.centerX = canvas.width * 0.75;
+    stick2.onChange = () => {
+        const cmd = `s2,${stick2.stickAngle},${stick2.stickPower}`;
+        console.log(cmd);
+        this.sendCmd(cmd)
+    };
+
+    controlls = [stick1, stick2];
 }
 
 function update() {
-    console.log("update");
+    // update all controls.
+    for(let item of controlls) {
+        item.update();
+    }
 }
 
 function draw() {    
     // clear screen.
     context.clearRect(0, 0, canvas.width, canvas.height);
     canvas.style.backgroundColor = "AliceBlue";
+
+    // draw all controls.
+    for(let item of controlls) {
+        item.draw();
+    }
 }
 
 // update frame.
