@@ -292,6 +292,133 @@ class Stick {
     }
 }
 
+class Button {
+    // 初期化
+    constructor(canvas, context) {
+        this.canvas = canvas;
+        this.context = context;
+
+        // 中心座標。
+        this.centerX = this.canvas.width / 2;
+        this.centerY = this.canvas.height / 2;
+        // サイズ。(setTextで自動設定)
+        this.width = 0;
+        this.height = 0;
+
+        // 表示。
+        this.fontName = `Candara`;
+        this.fontSize = this.canvas.width / 10;
+        this.fontFillStyle = "blue";
+        this.fontStrokeStyle = "blue"; // not used.
+        this.textAlign = 'center';
+        this.textBaseline = 'middle';
+        this.backFillStyle = "SkyBlue";
+        this.backStrokeStyle = "blue";
+        this.setText("button");
+
+        // 状態。
+        this.clicked = false;
+        this.onChange = (flag) => {}; // null guard.
+
+        // マウスイベントのインストール。
+        this.installMouseEvent();
+    }
+
+    // 文字をセットする。文字のサイズも取得する。
+    setText(text) {
+        this.text = text;
+
+        // 描画サイズを取得する。
+        this.context.save();
+        this.context.font = `${this.fontSize}px ${this.fontName}`;
+        const metrics = this.context.measureText(text);
+        this.context.restore();
+
+        // サイズを取得する。
+        this.width = metrics.width;
+        this.height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    }
+
+    // mousemove, mousedown, mouseupイベントのインストール。
+    // マルチタッチ対応できるように、pointerイベントに変更。
+    installMouseEvent() {
+        this.mousedown = false;
+        this.pointerId = 0;
+
+        window.addEventListener('pointerdown', ev => {
+            if (this.is_mouse_over(ev.offsetX, ev.offsetY)) {
+                this.mousedown = true;
+                this.pointerId = ev.pointerId;
+                this.onChange(true);
+            }
+        });
+
+        window.addEventListener('pointerup', ev => {
+            if (this.mousedown = true && this.pointerId == ev.pointerId) {
+                this.mousedown = false;
+                this.pointerId = 0;
+                this.onChange(false);
+            }
+        });
+    }
+
+    is_mouse_over(x, y) {
+        const l = this.centerX - this.width / 2;
+        const r = this.centerX + this.width / 2;
+        const t = this.centerY - this.height / 2;
+        const b = this.centerY + this.height / 2;
+        return (l < x && x < r && t < y && y < b);
+    }
+
+    update() {
+        // do nothing.
+    }
+
+    draw() {
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+
+        this.context.save();
+        {
+            this.context.lineWidth = this.mousedown? 5: 1;
+
+            // 中心を移動。
+            this.context.translate(this.centerX, this.centerY);
+
+            // 角丸を描画。
+            this.context.fillStyle = this.backFillStyle;
+            this.context.strokeStyle = this.backStrokeStyle;
+            this.roundedRect(0, -this.height*0.15, this.width*1.2, this.height*1.5, 10);
+
+            this.context.fillStyle = this.fontFillStyle;
+            this.context.strokeStyle = this.fontStrokeStyle;
+
+            // テキストを描画。
+            this.context.font = `${this.fontSize}px ${this.fontName}`;
+            this.context.textAlign = this.textAlign;
+            this.context.textBaseline = this.textBaseline;
+            this.context.fillText(this.text, 0, 0);
+        }
+        this.context.restore();
+    }
+
+    roundedRect(center_x, center_y, width, height, radius) {
+        const x = center_x - width / 2;
+        const y = center_y - height / 2;
+        this.context.save();
+        this.context.beginPath();
+        this.context.moveTo(x, y + radius);
+        this.context.arcTo(x, y + height, x + radius, y + height, radius);
+        this.context.arcTo(x + width, y + height, x + width, y + height - radius, radius);
+        this.context.arcTo(x + width, y, x + width - radius, y, radius);
+        this.context.arcTo(x, y, x, y + radius, radius);
+        this.context.closePath();
+        this.context.stroke(); // 枠線を描画。
+        this.context.fill(); // 塗りつぶす。
+        this.context.restore();
+    }
+}
+
 let canvas, context;
 let controlls = [];
 
@@ -328,7 +455,25 @@ function initControl() {
         this.sendCmd(cmd)
     };
 
-    controlls = [stick1, stick2];
+    const button1 = new Button(canvas, context);
+    button1.setText("X");
+    button1.centerX = canvas.width * 0.1;
+    button1.onChange = (flag) => {
+        const cmd = `b1,${flag? 1: 0},0`;
+        console.log(cmd);
+        this.sendCmd(cmd)
+    };
+
+    const button2 = new Button(canvas, context);
+    button2.setText("Y");
+    button2.centerX = canvas.width * 0.9;
+    button2.onChange = (flag) => {
+        const cmd = `b2,${flag? 1: 0},0`;
+        console.log(cmd);
+        this.sendCmd(cmd)
+    };
+
+    controlls = [stick1, stick2, button1, button2];
 }
 
 function update() {
