@@ -423,6 +423,164 @@ class Button {
     }
 }
 
+class Slider {
+    // 初期化
+    constructor(canvas, context) {
+        this.canvas = canvas;
+        this.context = context;
+
+        // 中心座標。
+        this.setPosition(
+            this.canvas.width / 2,
+            this.canvas.height / 2,
+            this.canvas.width * 0.2
+        );
+
+        // 表示。
+        this.sliderLineWidth = 0.05;
+        this.sliderKnobScale = 0.05;
+        this.sliderLineStyle = 'gray';
+        this.sliderKnobStyle = 'blue';
+
+        // 状態。
+        this.sliderValue = 0.0; // 0.0-1.0.
+
+        this.onChange = () => {}; // null guard.
+
+        // マウスイベントのインストール。
+        this.installMouseEvent();
+    }
+
+    setPosition(x, y, width) {
+        this.centerX = x;
+        this.centerY = y;
+        this.sliderWidth = width;
+        this.sliderLeft  = this.centerX - (this.sliderWidth / 2);
+        this.sliderRight = this.centerX + (this.sliderWidth / 2);
+    }
+
+    // mousemove, mousedown, mouseupイベントのインストール。
+    // マルチタッチ対応できるように、pointerイベントに変更。
+    installMouseEvent() {
+        this.mousedown = false;
+        this.pointerId = 0;
+
+        window.addEventListener('pointerdown', ev => {
+            if (this.mouse_Drag(ev.offsetX, ev.offsetY, false)) { // clientX, clientYだとフォームの分ずれた。
+                this.mousedown = true;
+                this.pointerId = ev.pointerId;
+                this.mouse_Down();
+            }
+        });
+
+        window.addEventListener('pointermove', ev => {
+            if (this.mousedown && this.pointerId == ev.pointerId) {
+                this.mouse_Drag(ev.offsetX, ev.offsetY, true);
+                //console.log(this.name, "this.stickAngle", this.stickAngle, "this.stickPower", this.stickPower);
+            }
+        });
+
+        window.addEventListener('pointerup', ev => {
+            if (this.pointerId == ev.pointerId) {
+                this.mousedown = false;
+                this.pointerId = 0;
+                this.mouse_Up();
+                //console.log(this.name, "this.stickAngle", this.stickAngle, "this.stickPower", this.stickPower);
+            }
+        });
+    }
+
+    update() {
+        // do nothing.
+    }
+
+    mouse_Down() {
+        //console.log("mouse_Down");
+    }
+
+    mouse_Drag(x, y, updateStick) {
+        //console.log("mouse_Drag");
+
+        // インジケーター原点での座標に変換。
+        const local_x =  x - this.centerX;
+        const local_y =  y - this.centerY;
+        const local_x2 = local_x * local_x;
+        const local_y2 = local_y * local_y;
+
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        const radius = (width > height)? width * this.sliderKnobScale: height * this.sliderKnobScale;
+        
+        // インジケーターの内側か？
+        const inside_radius = (local_x2 + local_y2 < radius * radius);
+
+        if (updateStick) {
+            // 少し動くごとにonChangeせず、少数第一位が変化したらonChangedする。
+            let changed = false;
+
+            // 表示位置の更新。はみ出たら戻す。
+            this.centerX = x;
+            if (this.centerX < this.sliderLeft)  this.centerX = this.sliderLeft;
+            if (this.centerX > this.sliderRight) this.centerX = this.sliderRight;
+
+            // 位置の計算。
+            const power = this.centerX - this.sliderLeft;
+            this.sliderValue = power / this.sliderWidth;
+            this.sliderValue = Math.round(this.sliderValue * 10) / 10; // 少数第1位で四捨五入。
+            if (this.sliderValue_Prev != this.sliderValue) {
+                this.sliderValue_Prev = this.sliderValue;
+                changed = true;
+            }
+
+            if (changed) {
+                this.onChange();
+            }
+        }
+
+        return inside_radius;
+    }
+
+    mouse_Up() {
+        //console.log("mouse_Up");
+    }
+
+    draw() {
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+
+        // ライン。
+        this.context.save();
+        {
+            this.context.strokeStyle = this.sliderLineStyle;
+            this.context.globalAlpha = 0.5; // 透明度
+
+            this.context.lineWidth = height * this.sliderLineWidth;
+            context.lineCap = 'round';
+            this.context.beginPath();
+            this.context.moveTo(this.sliderLeft, this.centerY);
+            this.context.lineTo(this.sliderRight, this.centerY);
+            this.context.stroke();
+            this.context.closePath();
+        }
+        this.context.restore();
+
+        // 小さな円。
+        this.context.save();
+        {
+            this.context.fillStyle = this.sliderKnobStyle;
+            this.context.globalAlpha = 0.9; // 透明度
+
+            this.context.translate(this.centerX, this.centerY)
+            this.context.beginPath();
+            const radius = (width > height)? width * this.sliderKnobScale: height * this.sliderKnobScale;
+            this.context.arc(0, 0, radius, 0, 2 * Math.PI);
+            this.context.closePath();
+            this.context.fill();
+        }
+        this.context.restore();
+    }
+}
+
 let canvas, context;
 let controlls = [];
 
@@ -481,6 +639,15 @@ function initControl() {
         this.sendCmd(cmd)
     };
     controlls.push(button2);
+
+    const slider1 = new Slider(canvas, context);
+    slider1.setPosition(canvas.width * 0.5, canvas.height * 0.25, canvas.width * 0.75);
+    slider1.onChange = () => {
+        const cmd = `s1,${slider1.sliderValue},0`;
+        console.log(cmd);
+        this.sendCmd(cmd)
+    };
+    controlls.push(slider1);
 }
 
 function update() {
