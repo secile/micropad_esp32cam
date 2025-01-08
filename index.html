@@ -582,7 +582,7 @@ class Slider {
 }
 
 let canvas, context;
-let controlls = [];
+let controls = [];
 
 setup();
 
@@ -609,7 +609,7 @@ function initControl() {
         console.log(cmd);
         this.sendCmd(cmd)
     };
-    controlls.push(stick1);
+    controls.push(stick1);
 
     const stick2 = new AnalogStick(canvas, context);
     stick2.centerX = canvas.width * 0.75;
@@ -618,7 +618,7 @@ function initControl() {
         console.log(cmd);
         this.sendCmd(cmd)
     };
-    controlls.push(stick2);
+    controls.push(stick2);
 
     const button1 = new Button(canvas, context);
     button1.setText("X");
@@ -628,7 +628,7 @@ function initControl() {
         console.log(cmd);
         this.sendCmd(cmd)
     };
-    controlls.push(button1);
+    controls.push(button1);
 
     const button2 = new Button(canvas, context);
     button2.setText("Y");
@@ -638,7 +638,7 @@ function initControl() {
         console.log(cmd);
         this.sendCmd(cmd)
     };
-    controlls.push(button2);
+    controls.push(button2);
 
     const slider1 = new Slider(canvas, context);
     slider1.setPosition(canvas.width * 0.5, canvas.height * 0.25, canvas.width * 0.75);
@@ -647,12 +647,12 @@ function initControl() {
         console.log(cmd);
         this.sendCmd(cmd)
     };
-    controlls.push(slider1);
+    controls.push(slider1);
 }
 
 function update() {
     // update all controls.
-    for(let item of controlls) {
+    for(let item of controls) {
         item.update();
     }
 }
@@ -663,7 +663,7 @@ function draw() {
     canvas.style.backgroundColor = "AliceBlue";
 
     // draw all controls.
-    for(let item of controlls) {
+    for(let item of controls) {
         item.draw();
     }
 }
