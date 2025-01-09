@@ -399,9 +399,6 @@ class Button {
     }
 
     draw() {
-        //const width = this.canvas.width;
-        //const height = this.canvas.height;
-
         this.context.save();
         {
             this.context.lineWidth = this.mousedown? 5: 1;
@@ -605,6 +602,7 @@ let canvas, context;
 let controls = [];
 
 setup();
+initControl();
 
 // start animation.
 requestAnimationFrame(updateFrame);
@@ -617,31 +615,37 @@ function setup() {
     context = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
-    initControl();
 }
 
 function initControl() {
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+
     const stick1 = new AnalogStick(canvas, context);
-    stick1.setPosition(canvas.width * 0.25, canvas.height / 2);
     stick1.onChange = (angle, power) => {
         const cmd = `a1,${angle},${power}`;
         console.log(cmd);
         this.sendCmd(cmd)
     };
     controls.push(stick1);
+    window.addEventListener('resize', () => {
+        stick1.setPosition(canvas.width * 0.25, canvas.height / 2);
+    });
 
     const stick2 = new AnalogStick(canvas, context);
-    stick2.setPosition(canvas.width * 0.75, canvas.height / 2);
     stick2.onChange = (angle, power) => {
         const cmd = `a2,${angle},${power}`;
         console.log(cmd);
         this.sendCmd(cmd)
     };
     controls.push(stick2);
+    window.addEventListener('resize', () => {
+        stick2.setPosition(canvas.width * 0.75, canvas.height / 2);
+    });
 
     const button1 = new Button(canvas, context);
-    button1.setPosition(canvas.width * 0.1, canvas.height / 2 + stick1.height);
     button1.text = "X";
     button1.onChange = (flag) => {
         const cmd = `b1,${flag? 1: 0},0`;
@@ -649,9 +653,11 @@ function initControl() {
         this.sendCmd(cmd)
     };
     controls.push(button1);
+    window.addEventListener('resize', () => {
+        button1.setPosition(canvas.width * 0.2, canvas.height / 2 + stick1.height * 0.75);
+    });
 
     const button2 = new Button(canvas, context);
-    button2.setPosition(canvas.width * 0.9, canvas.height / 2 + stick2.height);
     button2.text = "Y";
     button2.onChange = (flag) => {
         const cmd = `b2,${flag? 1: 0},0`;
@@ -659,15 +665,23 @@ function initControl() {
         this.sendCmd(cmd)
     };
     controls.push(button2);
+    window.addEventListener('resize', () => {
+        button2.setPosition(canvas.width * 0.8, canvas.height / 2 + stick2.height * 0.75);
+    });
 
     const slider1 = new Slider(canvas, context);
-    slider1.setPosition(canvas.width * 0.5, canvas.height * 0.25, canvas.width * 0.75);
     slider1.onChange = (value) => {
         const cmd = `s1,${value},0`;
         console.log(cmd);
         this.sendCmd(cmd)
     };
     controls.push(slider1);
+    window.addEventListener('resize', () => {
+        slider1.setPosition(canvas.width * 0.5, canvas.height / 2 - stick2.height * 0.75, canvas.width * 0.75);
+    });
+
+    // trigger 'resize' event to layout control.
+    window.dispatchEvent(new Event('resize'));
 }
 
 function update() {
