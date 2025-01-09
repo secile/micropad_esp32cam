@@ -343,9 +343,10 @@ class Button {
         this.centerX = x;
         this.centerY = y;
     }
+
     // 文字をセットする。文字のサイズも取得する。
     setText(text) {
-        this.text = text;
+        this._text = text;
 
         // 描画サイズを取得する。
         this.context.save();
@@ -357,6 +358,9 @@ class Button {
         this.width = metrics.width;
         this.height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
     }
+
+    set text(s) { this.setText(s); }
+    get text() { return this._text; }
 
     // mousemove, mousedown, mouseupイベントのインストール。
     // マルチタッチ対応できるように、pointerイベントに変更。
@@ -636,8 +640,8 @@ function initControl() {
     controls.push(stick2);
 
     const button1 = new Button(canvas, context);
-    button1.setText("X");
     button1.setPosition(canvas.width * 0.1, canvas.height / 2 + stick1.height);
+    button1.text = "X";
     button1.onChange = (flag) => {
         const cmd = `b1,${flag? 1: 0},0`;
         console.log(cmd);
@@ -646,8 +650,8 @@ function initControl() {
     controls.push(button1);
 
     const button2 = new Button(canvas, context);
-    button2.setText("Y");
     button2.setPosition(canvas.width * 0.9, canvas.height / 2 + stick2.height);
+    button2.text = "Y";
     button2.onChange = (flag) => {
         const cmd = `b2,${flag? 1: 0},0`;
         console.log(cmd);
