@@ -254,7 +254,7 @@ class AnalogStick {
             }
 
             if (changed) {
-                this.onChange();
+                this.onChange(this.stickAngle, this.stickPower);
             }
         }
 
@@ -272,10 +272,11 @@ class AnalogStick {
         this.posX = 0;
         this.posY = 0;
 
-        this.onChange();
+        this.onChange(0, 0);
     }
 
     draw() {
+
         // 大きな円をセンターに。
         this.context.save();
         {
@@ -333,7 +334,7 @@ class Button {
 
         // 状態。
         this.clicked = false;
-        this.onChange = (flag) => {}; // null guard.
+        this.onChange = () => {}; // null guard.
 
         // マウスイベントのインストール。
         this.installMouseEvent();
@@ -552,7 +553,7 @@ class Slider {
             }
 
             if (changed) {
-                this.onChange();
+                this.onChange(this.sliderValue);
             }
         }
 
@@ -622,18 +623,18 @@ function setup() {
 
 function initControl() {
     const stick1 = new AnalogStick(canvas, context);
-    stick1.onChange = () => {
-        const cmd = `a1,${stick1.stickAngle},${stick1.stickPower}`;
     stick1.setPosition(canvas.width * 0.25, canvas.height / 2);
+    stick1.onChange = (angle, power) => {
+        const cmd = `a1,${angle},${power}`;
         console.log(cmd);
         this.sendCmd(cmd)
     };
     controls.push(stick1);
 
     const stick2 = new AnalogStick(canvas, context);
-    stick2.onChange = () => {
-        const cmd = `a2,${stick2.stickAngle},${stick2.stickPower}`;
     stick2.setPosition(canvas.width * 0.75, canvas.height / 2);
+    stick2.onChange = (angle, power) => {
+        const cmd = `a2,${angle},${power}`;
         console.log(cmd);
         this.sendCmd(cmd)
     };
@@ -661,8 +662,8 @@ function initControl() {
 
     const slider1 = new Slider(canvas, context);
     slider1.setPosition(canvas.width * 0.5, canvas.height * 0.25, canvas.width * 0.75);
-    slider1.onChange = () => {
-        const cmd = `s1,${slider1.sliderValue},0`;
+    slider1.onChange = (value) => {
+        const cmd = `s1,${value},0`;
         console.log(cmd);
         this.sendCmd(cmd)
     };
