@@ -118,8 +118,7 @@ class AnalogStick {
         this.context = context;
 
         // 中心座標。
-        this.centerX = this.canvas.width / 2;
-        this.centerY = this.canvas.height / 2;
+        this.setPosition(this.canvas.width / 2, this.canvas.height / 2);
 
         // センター原点での座標。
         this.posX = 0;
@@ -139,6 +138,25 @@ class AnalogStick {
 
         // マウスイベントのインストール。
         this.installMouseEvent();
+    }
+
+    get large_radius() {
+        return (this.canvas.width > this.canvas.height)?
+            this.canvas.width * this.largeRadiusScale:
+            this.canvas.height * this.largeRadiusScale;
+    }
+    get small_radius() {
+        return (this.canvas.width > this.canvas.height)?
+            this.canvas.width * this.smallRadiusScale:
+            this.canvas.height * this.smallRadiusScale;
+    }
+
+    get width()  { return 2 * this.large_radius; }
+    get height() { return 2 * this.large_radius; }
+
+    setPosition(x, y) {
+        this.centerX = x;
+        this.centerY = y;
     }
 
     // mousemove, mousedown, mouseupイベントのインストール。
@@ -189,26 +207,24 @@ class AnalogStick {
         const local_x2 = local_x * local_x;
         const local_y2 = local_y * local_y;
 
-        const width = this.canvas.width;
-        const height = this.canvas.height;
-        const radius_max = (width > height)? width * this.largeRadiusScale: height * this.largeRadiusScale;
-        const radius = Math.min(Math.sqrt(local_x2 + local_y2), radius_max);
+        const large_radius = this.large_radius;
+        const touch_radius = Math.min(Math.sqrt(local_x2 + local_y2), large_radius);
         
         // 大きな円の内側か？
-        const inside_radius_max = (local_x2 + local_y2 < radius_max * radius_max);
+        const inside_radius_max = (local_x2 + local_y2 < large_radius * large_radius);
 
         if (updateStick) {
             // 少し動くごとにonChangeせず、変化したらonChangedする。
             let changed = false;
 
             // powerとangleを求める。
-            let power = radius / radius_max;
+            let power = touch_radius / large_radius;
             let angle = Math.atan2(local_y, local_x); // X座標から時計回りラジアン。-π～+π。
             if (angle < 0) angle += 2*Math.PI;        // 0～2πに変換。
 
             // 画面の表示位置の更新。
-            this.posX = Math.cos(angle) * radius;
-            this.posY = Math.sin(angle) * radius;
+            this.posX = Math.cos(angle) * touch_radius;
+            this.posY = Math.sin(angle) * touch_radius;
 
             // powerは3段階に制限する。
             if      (power < 0.33)  this.stickPower = 0;
@@ -260,9 +276,6 @@ class AnalogStick {
     }
 
     draw() {
-        const width = this.canvas.width;
-        const height = this.canvas.height;
-
         // 大きな円をセンターに。
         this.context.save();
         {
@@ -271,8 +284,7 @@ class AnalogStick {
 
             this.context.translate(this.centerX, this.centerY)
             this.context.beginPath();
-            const radius = (width > height)? width * this.largeRadiusScale: height * this.largeRadiusScale;
-            this.context.arc(0, 0, radius, 0, 2 * Math.PI);
+            this.context.arc(0, 0, this.large_radius, 0, 2 * Math.PI);
             this.context.closePath();
             this.context.fill();
         }
@@ -287,8 +299,7 @@ class AnalogStick {
             this.context.translate(this.centerX, this.centerY)
             this.context.translate(this.posX, this.posY)
             this.context.beginPath();
-            const radius = (width > height)? width * this.smallRadiusScale: height * this.smallRadiusScale;
-            this.context.arc(0, 0, radius, 0, 2 * Math.PI);
+            this.context.arc(0, 0, this.small_radius, 0, 2 * Math.PI);
             this.context.closePath();
             this.context.fill();
         }
@@ -303,8 +314,8 @@ class Button {
         this.context = context;
 
         // 中心座標。
-        this.centerX = this.canvas.width / 2;
-        this.centerY = this.canvas.height / 2;
+        this.setPosition(this.canvas.width / 2, this.canvas.height / 2);
+
         // サイズ。(setTextで自動設定)
         this.width = 0;
         this.height = 0;
@@ -328,6 +339,10 @@ class Button {
         this.installMouseEvent();
     }
 
+    setPosition(x, y) {
+        this.centerX = x;
+        this.centerY = y;
+    }
     // 文字をセットする。文字のサイズも取得する。
     setText(text) {
         this.text = text;
@@ -379,8 +394,8 @@ class Button {
     }
 
     draw() {
-        const width = this.canvas.width;
-        const height = this.canvas.height;
+        //const width = this.canvas.width;
+        //const height = this.canvas.height;
 
         this.context.save();
         {
@@ -603,18 +618,18 @@ function setup() {
 
 function initControl() {
     const stick1 = new AnalogStick(canvas, context);
-    stick1.centerX = canvas.width * 0.25;
     stick1.onChange = () => {
         const cmd = `a1,${stick1.stickAngle},${stick1.stickPower}`;
+    stick1.setPosition(canvas.width * 0.25, canvas.height / 2);
         console.log(cmd);
         this.sendCmd(cmd)
     };
     controls.push(stick1);
 
     const stick2 = new AnalogStick(canvas, context);
-    stick2.centerX = canvas.width * 0.75;
     stick2.onChange = () => {
         const cmd = `a2,${stick2.stickAngle},${stick2.stickPower}`;
+    stick2.setPosition(canvas.width * 0.75, canvas.height / 2);
         console.log(cmd);
         this.sendCmd(cmd)
     };
@@ -622,7 +637,7 @@ function initControl() {
 
     const button1 = new Button(canvas, context);
     button1.setText("X");
-    button1.centerX = canvas.width * 0.1;
+    button1.setPosition(canvas.width * 0.1, canvas.height / 2 + stick1.height);
     button1.onChange = (flag) => {
         const cmd = `b1,${flag? 1: 0},0`;
         console.log(cmd);
@@ -632,7 +647,7 @@ function initControl() {
 
     const button2 = new Button(canvas, context);
     button2.setText("Y");
-    button2.centerX = canvas.width * 0.9;
+    button2.setPosition(canvas.width * 0.9, canvas.height / 2 + stick2.height);
     button2.onChange = (flag) => {
         const cmd = `b2,${flag? 1: 0},0`;
         console.log(cmd);
