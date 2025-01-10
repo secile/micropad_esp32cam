@@ -343,7 +343,8 @@ class Button {
     }
 
     updateSize() {
-        this.fontSize = this.canvas.width / 10;
+        const size = Math.max(this.canvas.width, this.canvas.height);
+        this.fontSize = size / 10;
 
         // 描画サイズを取得する。
         this.context.save();
