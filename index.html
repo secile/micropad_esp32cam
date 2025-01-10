@@ -314,13 +314,6 @@ class Button {
         this.canvas = canvas;
         this.context = context;
 
-        // 中心座標。
-        this.setPosition(this.canvas.width / 2, this.canvas.height / 2);
-
-        // サイズ。(setTextで自動設定)
-        this.width = 0;
-        this.height = 0;
-
         // 表示。
         this.fontName = `Candara`;
         this.fontSize = this.canvas.width / 10;
@@ -330,7 +323,10 @@ class Button {
         this.textBaseline = 'middle';
         this.backFillStyle = "SkyBlue";
         this.backStrokeStyle = "blue";
-        this.setText("button");
+        this.text = "button";
+
+        // 中心座標。(width, heightも更新。)
+        this.setPosition(this.canvas.width / 2, this.canvas.height / 2);
 
         // 状態。
         this.clicked = false;
@@ -343,25 +339,22 @@ class Button {
     setPosition(x, y) {
         this.centerX = x;
         this.centerY = y;
+        this.updateSize();
     }
 
-    // 文字をセットする。文字のサイズも取得する。
-    setText(text) {
-        this._text = text;
+    updateSize() {
+        this.fontSize = this.canvas.width / 10;
 
         // 描画サイズを取得する。
         this.context.save();
         this.context.font = `${this.fontSize}px ${this.fontName}`;
-        const metrics = this.context.measureText(text);
+        const metrics = this.context.measureText(this.text);
         this.context.restore();
 
         // サイズを取得する。
         this.width = metrics.width;
         this.height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
     }
-
-    set text(s) { this.setText(s); }
-    get text() { return this._text; }
 
     // mousemove, mousedown, mouseupイベントのインストール。
     // マルチタッチ対応できるように、pointerイベントに変更。
@@ -601,7 +594,7 @@ class Slider {
 let canvas, context;
 let controls = [];
 
-setup();
+initCanvas();
 initControl();
 
 // start animation.
@@ -610,19 +603,19 @@ requestAnimationFrame(updateFrame);
 // suppress context menu.
 document.oncontextmenu = () => false;
 
-function setup() {
+function initCanvas() {
     canvas = document.querySelector('#canvas');
     context = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
 }
 
+// init controls.
 function initControl() {
     window.addEventListener('resize', () => {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     });
 
+    // add AnalogStick.
     const stick1 = new AnalogStick(canvas, context);
     stick1.onChange = (angle, power) => {
         const cmd = `a1,${angle},${power}`;
@@ -645,6 +638,7 @@ function initControl() {
         stick2.setPosition(canvas.width * 0.75, canvas.height / 2);
     });
 
+    // add Button.
     const button1 = new Button(canvas, context);
     button1.text = "X";
     button1.onChange = (flag) => {
@@ -669,6 +663,7 @@ function initControl() {
         button2.setPosition(canvas.width * 0.8, canvas.height / 2 + stick2.height * 0.75);
     });
 
+    // Add Slider.
     const slider1 = new Slider(canvas, context);
     slider1.onChange = (value) => {
         const cmd = `s1,${value},0`;
