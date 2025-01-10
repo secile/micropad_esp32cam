@@ -83,20 +83,23 @@ function onDisconnected(event) {
 }
 
 // send cmd and micro:bit receive data.
-async function sendCmd(num) {
-    if (!rxCharacteristic) return;
+async function sendCmd(cmd) {
+    // write log when micro:bit is not connected.
+    if (!rxCharacteristic) {
+        console.log(cmd);
+        return;
+    }
     
-    let encoder = new TextEncoder();
-    enqueue(() => rxCharacteristic.writeValue(encoder.encode(num + "\n"))
+    enqueue(() => rxCharacteristic.writeValue(encoder.encode(cmd + "\n"))
         .catch(error => console.error('error occured while writeValue:', error)));
 }
-
-let queue = Promise.resolve();
+const encoder = new TextEncoder();
 
 function enqueue(operation) {
    queue = queue.then(operation, operation);
    return queue;
 }
+let queue = Promise.resolve();
 
 // called when micro:bit send data.
 function onTxCharacteristicValueChanged(event) {
@@ -620,8 +623,7 @@ function initControl() {
     const stick1 = new AnalogStick(canvas, context);
     stick1.onChange = (angle, power) => {
         const cmd = `a1,${angle},${power}`;
-        console.log(cmd);
-        this.sendCmd(cmd)
+        sendCmd(cmd)
     };
     controls.push(stick1);
     window.addEventListener('resize', () => {
@@ -631,8 +633,7 @@ function initControl() {
     const stick2 = new AnalogStick(canvas, context);
     stick2.onChange = (angle, power) => {
         const cmd = `a2,${angle},${power}`;
-        console.log(cmd);
-        this.sendCmd(cmd)
+        sendCmd(cmd)
     };
     controls.push(stick2);
     window.addEventListener('resize', () => {
@@ -644,8 +645,7 @@ function initControl() {
     button1.text = "X";
     button1.onChange = (flag) => {
         const cmd = `b1,${flag? 1: 0},0`;
-        console.log(cmd);
-        this.sendCmd(cmd)
+        sendCmd(cmd)
     };
     controls.push(button1);
     window.addEventListener('resize', () => {
@@ -656,8 +656,7 @@ function initControl() {
     button2.text = "Y";
     button2.onChange = (flag) => {
         const cmd = `b2,${flag? 1: 0},0`;
-        console.log(cmd);
-        this.sendCmd(cmd)
+        sendCmd(cmd)
     };
     controls.push(button2);
     window.addEventListener('resize', () => {
@@ -668,8 +667,7 @@ function initControl() {
     const slider1 = new Slider(canvas, context);
     slider1.onChange = (value) => {
         const cmd = `s1,${value},0`;
-        console.log(cmd);
-        this.sendCmd(cmd)
+        sendCmd(cmd)
     };
     controls.push(slider1);
     window.addEventListener('resize', () => {
