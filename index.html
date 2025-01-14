@@ -595,25 +595,27 @@ class Slider {
     }
 }
 
-let canvas, context;
-let controls = [];
+// suppress context menu.
+document.oncontextmenu = () => false;
 
-initCanvas();
-initControl();
+const canvas = document.querySelector('#canvas');
+const context = canvas.getContext('2d');
+const controls = initControl();
 
 // start animation.
 requestAnimationFrame(updateFrame);
 
-// suppress context menu.
-document.oncontextmenu = () => false;
-
-function initCanvas() {
-    canvas = document.querySelector('#canvas');
-    context = canvas.getContext('2d');
+// update frame.
+function updateFrame() {
+    update();
+    draw();
+    requestAnimationFrame(updateFrame);
 }
 
 // init controls.
 function initControl() {
+    let result = [];
+
     window.addEventListener('resize', () => {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -625,7 +627,7 @@ function initControl() {
         const cmd = `a1,${angle},${power}`;
         sendCmd(cmd)
     };
-    controls.push(stick1);
+    result.push(stick1);
     window.addEventListener('resize', () => {
         stick1.setPosition(canvas.width * 0.25, canvas.height / 2);
     });
@@ -635,7 +637,7 @@ function initControl() {
         const cmd = `a2,${angle},${power}`;
         sendCmd(cmd)
     };
-    controls.push(stick2);
+    result.push(stick2);
     window.addEventListener('resize', () => {
         stick2.setPosition(canvas.width * 0.75, canvas.height / 2);
     });
@@ -647,7 +649,7 @@ function initControl() {
         const cmd = `b1,${flag? 1: 0},0`;
         sendCmd(cmd)
     };
-    controls.push(button1);
+    result.push(button1);
     window.addEventListener('resize', () => {
         button1.setPosition(canvas.width * 0.2, canvas.height / 2 + stick1.height * 0.75);
     });
@@ -658,7 +660,7 @@ function initControl() {
         const cmd = `b2,${flag? 1: 0},0`;
         sendCmd(cmd)
     };
-    controls.push(button2);
+    result.push(button2);
     window.addEventListener('resize', () => {
         button2.setPosition(canvas.width * 0.8, canvas.height / 2 + stick2.height * 0.75);
     });
@@ -669,13 +671,15 @@ function initControl() {
         const cmd = `s1,${value},0`;
         sendCmd(cmd)
     };
-    controls.push(slider1);
+    result.push(slider1);
     window.addEventListener('resize', () => {
         slider1.setPosition(canvas.width * 0.5, canvas.height / 2 - stick2.height * 0.75, canvas.width * 0.75);
     });
 
     // trigger 'resize' event to layout control.
     window.dispatchEvent(new Event('resize'));
+
+    return result;
 }
 
 function update() {
@@ -694,13 +698,6 @@ function draw() {
     for(let item of controls) {
         item.draw();
     }
-}
-
-// update frame.
-function updateFrame() {
-    update();
-    draw();
-    requestAnimationFrame(updateFrame);
 }
 
 </script>
