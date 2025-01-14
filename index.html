@@ -445,10 +445,10 @@ class Slider {
         );
 
         // 表示。
-        this.sliderLineWidth = 0.05;
-        this.sliderKnobScale = 0.05;
-        this.sliderLineStyle = 'gray';
-        this.sliderKnobStyle = 'orange';
+        this.lineWidth = 0.05;
+        this.knobScale = 0.05;
+        this.lineStyle = 'gray';
+        this.knobStyle = 'blue';
 
         this.onChange = () => {}; // null guard.
 
@@ -514,7 +514,7 @@ class Slider {
 
         const width = this.canvas.width;
         const height = this.canvas.height;
-        const radius = (width > height)? width * this.sliderKnobScale: height * this.sliderKnobScale;
+        const radius = (width > height)? width * this.knobScale: height * this.knobScale;
         
         // インジケーターの内側か？
         const inside_radius = (local_x2 + local_y2 < radius * radius);
@@ -549,10 +549,10 @@ class Slider {
         // ライン。
         this.context.save();
         {
-            this.context.strokeStyle = this.sliderLineStyle;
+            this.context.strokeStyle = this.lineStyle;
             this.context.globalAlpha = 0.5; // 透明度
 
-            this.context.lineWidth = height * this.sliderLineWidth;
+            this.context.lineWidth = height * this.lineWidth;
             context.lineCap = 'round';
             this.context.beginPath();
             this.context.moveTo(this.sliderLeft, this.centerY);
@@ -565,12 +565,12 @@ class Slider {
         // 小さな円。
         this.context.save();
         {
-            this.context.fillStyle = this.sliderKnobStyle;
+            this.context.fillStyle = this.knobStyle;
             this.context.globalAlpha = 0.9; // 透明度
 
             this.context.translate(this.centerX, this.centerY)
             this.context.beginPath();
-            const radius = (width > height)? width * this.sliderKnobScale: height * this.sliderKnobScale;
+            const radius = (width > height)? width * this.knobScale: height * this.knobScale;
             this.context.arc(0, 0, radius, 0, 2 * Math.PI);
             this.context.closePath();
             this.context.fill();
@@ -605,7 +605,7 @@ function initControl() {
         canvas.height = window.innerHeight;
     });
 
-    // add AnalogStick.
+    // AnalogStick 1.
     const stick1 = new AnalogStick(canvas, context);
     stick1.onChange = (angle, power) => {
         const cmd = `a1,${angle},${power}`;
@@ -616,6 +616,7 @@ function initControl() {
         stick1.setPosition(canvas.width * 0.25, canvas.height / 2);
     });
 
+    // AnalogStick 2.
     const stick2 = new AnalogStick(canvas, context);
     stick2.onChange = (angle, power) => {
         const cmd = `a2,${angle},${power}`;
@@ -626,7 +627,7 @@ function initControl() {
         stick2.setPosition(canvas.width * 0.75, canvas.height / 2);
     });
 
-    // add Button.
+    // Button 1.
     const button1 = new Button(canvas, context);
     button1.text = "X";
     button1.onChange = (flag) => {
@@ -638,6 +639,7 @@ function initControl() {
         button1.setPosition(canvas.width * 0.2, canvas.height / 2 + stick1.height * 0.75);
     });
 
+    // Button 2.
     const button2 = new Button(canvas, context);
     button2.text = "Y";
     button2.onChange = (flag) => {
@@ -649,8 +651,9 @@ function initControl() {
         button2.setPosition(canvas.width * 0.8, canvas.height / 2 + stick2.height * 0.75);
     });
 
-    // Add Slider.
+    // Slider.
     const slider1 = new Slider(canvas, context);
+    slider1.knobStyle = 'orange';
     slider1.onChange = (value) => {
         const cmd = `s1,${value},0`;
         sendCmd(cmd)
