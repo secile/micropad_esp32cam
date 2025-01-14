@@ -346,7 +346,7 @@ class Button {
         // 描画サイズを取得する。
         this.context.save();
         this.context.font = `${this.fontSize}px ${this.fontName}`;
-        const metrics = this.context.measureText(this.text);
+        const metrics = this.context.measureText(this.text + ' '); // 狭いので空白文字を追加して少し幅を広げる。
         this.context.restore();
 
         // サイズを取得する。
