@@ -85,7 +85,7 @@ function onDisconnected(event) {
 // send cmd and micro:bit receive data.
 async function sendCmd(cmd) {
     // write log when micro:bit is not connected.
-    if (!rxCharacteristic) {
+    if (!isConnected) {
         console.log(cmd);
         return;
     }
