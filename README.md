@@ -68,5 +68,35 @@ ControlID is unique ID every control has it own. Value1 and Value2 is up to cont
 
 ![image](https://github.com/user-attachments/assets/60c656ef-ff0d-468b-bbed-b63cd59a742c)
 
+# customise layout of control.
+modify initControl function.
 
+for example, in case you add 3rd button 'Z', follow the instruction below.
+
+- const button3 = new Button(...), and result.push(button3).
+- onChange, rename 'b2' to 'b3'.
+- on response to 'resize' event, you have to layout it to appropriate position.
+
+```js
+// Button 3.
+const button3 = new Button(canvas, context);
+button3.text = "Z";
+button3.onChange = (flag) => {
+    const cmd = `b3,${flag? 1: 0},0`;
+    sendCmd(cmd)
+};
+result.push(button3);
+window.addEventListener('resize', () => {
+    button3.setPosition(canvas.width * 0.5, canvas.height / 2 + stick2.height * 0.75);
+});
+```
+
+- you can modify control style.
+
+```js
+button3.backFillStyle = "LightGreen";
+button3.backStrokeStyle = "DarkGreen";
+```
+
+![image](https://github.com/user-attachments/assets/b56faa47-b4e5-4fcc-aaee-3d353c7618c4)
 
