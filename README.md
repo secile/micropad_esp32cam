@@ -1,7 +1,7 @@
 # remotely control your micro:bit from smartphone via BLE (Bluetooth Low Energy).
 
-to use, please access URL 
-https://secile.github.io/micropad/
+Download 'index.html' to your smartphone and open it,  
+or access URL https://secile.github.io/micropad/
 
 You can see screen below.
 - Press '🚩' button to connect your micro:bit.
@@ -24,8 +24,8 @@ There are three kinds of control.
 
 ![Slider](https://github.com/user-attachments/assets/3873f6b0-f230-4080-9676-c25ebb8b722d)
 
-# transfer format.
-On control updated, micropad send text line to micro:bit via BLE. Text format is csv with 3 params. Format is 'ControlID, Value1, Value2'.  
+# transfer message format.
+On control updated, micropad send message to micro:bit via BLE. Message format is csv with 3 params 'ControlID, Value1, Value2'.  
 ControlID is unique ID every control has it own. Value1 and Value2 is up to control kind.
 
 - Analog Stick
@@ -43,3 +43,30 @@ ControlID is unique ID every control has it own. Value1 and Value2 is up to cont
     - Value1: ratio with 0.0-1.0. (0.1 step)
     - Value2: '0'(reserved).
     - e.g. 's1, 0.7, 0'
+
+# coding on micro:bit.
+
+- on start
+    - add 'bluetooth uart service' to 'on start' 
+
+![image](https://github.com/user-attachments/assets/d6816157-f9f9-4031-bf71-1939c16a0ae1)
+
+- bluetooth on data received
+    - receive message from micropad, parse it to 3 params, ControlID, Value1, Value2.
+    - then call 'received' function which you make.
+
+![image](https://github.com/user-attachments/assets/954031ad-1f3d-401f-b529-a59a6fff204a)
+
+- received function
+    - this is function that does you want.
+    - branch by ControlID, interact actions by using Value1 and Value2.
+    - here is a sample. Hero moves by Analog Stick, LED shows 'X' or 'Y' by pressing Button, and LED brightness can be changed by Slider. don't forget to add 'create sprite' in 'on start'.
+
+![image](https://github.com/user-attachments/assets/4a72074c-9bdd-4ad8-ae9c-c55ddbc96372)
+
+- of course, don't forget to enable 'No Pairing Required'.
+
+![image](https://github.com/user-attachments/assets/60c656ef-ff0d-468b-bbed-b63cd59a742c)
+
+
+
