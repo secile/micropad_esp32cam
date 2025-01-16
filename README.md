@@ -46,6 +46,9 @@ ControlID is unique ID every control has it own. Value1 and Value2 is up to cont
 
 # coding on micro:bit.
 
+See my micro:bit MakeCode sample project.  
+https://makecode.microbit.org/S93757-34929-39231-95436
+
 - on start
     - add 'bluetooth uart service' to 'on start' 
 
