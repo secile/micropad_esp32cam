@@ -34,7 +34,7 @@ ControlID is unique ID every control has it own. Value1 and Value2 is up to cont
     - Value2: power. distance from origin. range 0.0-1.0. (rounded in 3 levels, 0.0 or 0.5 or 1.0.)
     - e.g. 'a1, 3.14, 0.5'
 - Button
-    - ControlID: 'b1' or 'b2'
+    - ControlID: 'b1'(X Button) or 'b2'(Y Button)
     - Value1: '1'(press) or '0'(release).
     - Value2: '0'(reserved).
     - e.g. 'b2, 1, 0'
@@ -74,7 +74,7 @@ modify initControl function.
 for example, in case you add 3rd button 'Z', follow the instruction below.
 
 - const button3 = new Button(...), and result.push(button3).
-- onChange, rename 'b2' to 'b3'.
+- onChange, asign unique Control ID. rename 'b2' to 'b3'.
 - on response to 'resize' event, you have to layout it to appropriate position.
 
 ```js
