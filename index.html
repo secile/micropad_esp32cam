@@ -314,12 +314,13 @@ class Button {
         // 表示。
         this.fontName = `Candara`;
         this.fontSize = this.canvas.width / 10;
-        this.fontFillStyle = "blue";
+        this.fontFillStyle = "blue";   // text color.
         this.fontStrokeStyle = "blue"; // not used.
         this.textAlign = 'center';
         this.textBaseline = 'middle';
-        this.backFillStyle = "SkyBlue";
-        this.backStrokeStyle = "blue";
+        this.backFillStyle = 'LightCyan';     // button back
+        this.backActiveStyle = 'LightSkyBlue' // button back(active)
+        this.backStrokeStyle = "blue";        // button border.
         this.text = "button";
 
         // 中心座標。(width, heightも更新。)
@@ -346,12 +347,15 @@ class Button {
         // 描画サイズを取得する。
         this.context.save();
         this.context.font = `${this.fontSize}px ${this.fontName}`;
-        const metrics = this.context.measureText(this.text + ' '); // 狭いので空白文字を追加して少し幅を広げる。
+        const metrics = this.context.measureText(this.text);
+        const metrics1 = this.context.measureText(' '); // 一文字分。
         this.context.restore();
 
         // サイズを取得する。
         this.width = metrics.width;
         this.height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+        this.width += metrics1.width;  // 狭いので1文字分広く。
+        this.height += metrics1.width; // 狭いので1文字分広く。
     }
 
     // mousemove, mousedown, mouseupイベントのインストール。
@@ -392,24 +396,22 @@ class Button {
     draw() {
         this.context.save();
         {
-            this.context.lineWidth = this.mousedown? 5: 1;
-
             // 中心を移動。
             this.context.translate(this.centerX, this.centerY);
 
             // 角丸を描画。
-            this.context.fillStyle = this.backFillStyle;
+            this.context.lineWidth = this.height * (this.mousedown? 0.1: 0.02); // this.widthは不自然。this.heightを使う。
+            this.context.fillStyle = this.mousedown? this.backActiveStyle: this.backFillStyle;
             this.context.strokeStyle = this.backStrokeStyle;
-            this.roundedRect(0, -this.height*0.15, this.width*1.2, this.height*1.5, 10);
-
-            this.context.fillStyle = this.fontFillStyle;
-            this.context.strokeStyle = this.fontStrokeStyle;
+            this.roundedRect(0, 0, this.width, this.height, this.height*0.2);
 
             // テキストを描画。
+            this.context.fillStyle = this.fontFillStyle;
+            this.context.strokeStyle = this.fontStrokeStyle;
             this.context.font = `${this.fontSize}px ${this.fontName}`;
             this.context.textAlign = this.textAlign;
             this.context.textBaseline = this.textBaseline;
-            this.context.fillText(this.text, 0, 0);
+            this.context.fillText(this.text, 0, this.height*0.1);
         }
         this.context.restore();
     }
