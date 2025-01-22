@@ -327,11 +327,17 @@ class Button {
         this.setPosition(this.canvas.width / 2, this.canvas.height / 2);
 
         // 状態。
+        this.toggle = false;
         this.clicked = false;
         this.onChange = () => {}; // null guard.
 
         // マウスイベントのインストール。
         this.installMouseEvent();
+    }
+
+    get is_active() {
+        if (this.toggle) return this.clicked;
+        else return this.mousedown;
     }
 
     setPosition(x, y) {
@@ -368,7 +374,13 @@ class Button {
             if (this.is_mouse_over(ev.offsetX, ev.offsetY)) {
                 this.mousedown = true;
                 this.pointerId = ev.pointerId;
-                this.onChange(true);
+
+                if (!this.toggle) {
+                    this.onChange(true);
+                } else {
+                    this.clicked = !this.clicked;
+                    this.onChange(this.clicked);
+                }
             }
         });
 
@@ -376,7 +388,10 @@ class Button {
             if (this.mousedown = true && this.pointerId == ev.pointerId) {
                 this.mousedown = false;
                 this.pointerId = 0;
-                this.onChange(false);
+                
+                if (!this.toggle) {
+                    this.onChange(false);
+                }
             }
         });
     }
@@ -400,8 +415,8 @@ class Button {
             this.context.translate(this.centerX, this.centerY);
 
             // 角丸を描画。
-            this.context.lineWidth = this.height * (this.mousedown? 0.1: 0.02); // this.widthは不自然。this.heightを使う。
-            this.context.fillStyle = this.mousedown? this.backActiveStyle: this.backFillStyle;
+            this.context.lineWidth = this.height * (this.is_active? 0.1: 0.02); // this.widthは不自然。this.heightを使う。
+            this.context.fillStyle = this.is_active? this.backActiveStyle: this.backFillStyle;
             this.context.strokeStyle = this.backStrokeStyle;
             this.roundedRect(0, 0, this.width, this.height, this.height*0.2);
 
@@ -644,6 +659,7 @@ function initControl() {
     // Button 2.
     const button2 = new Button(canvas, context);
     button2.text = "Y";
+    button2.toggle = true;
     button2.onChange = (flag) => {
         const cmd = `b2,${flag? 1: 0},0`;
         sendCmd(cmd)
