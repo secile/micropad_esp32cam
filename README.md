@@ -18,6 +18,10 @@ There are three kinds of control.
 
 2. Button
 
+button has two mode, normal mode and toggle mode.  
+in normal mode, press to turn on and release to turn off.
+in toggle mode, switch on and off on every click.
+
 ![image](https://github.com/user-attachments/assets/be318136-3676-4d92-816f-4f03a7052343)
 
 3. Slider
@@ -35,7 +39,7 @@ ControlID is unique ID every control has it own. Value1 and Value2 is up to cont
     - e.g. 'a1, 3.14, 0.5'
 - Button
     - ControlID: 'b1'(X Button) or 'b2'(Y Button)
-    - Value1: '1'(press) or '0'(release).
+    - Value1: '1'(on) or '0'(off).
     - Value2: '0'(reserved).
     - e.g. 'b2, 1, 0'
 - Slider
