@@ -328,7 +328,7 @@ class Button {
 
         // 状態。
         this.toggle = false;
-        this.clicked = false;
+        this.checked = false;
         this.onChange = () => {}; // null guard.
 
         // マウスイベントのインストール。
@@ -336,7 +336,7 @@ class Button {
     }
 
     get is_active() {
-        if (this.toggle) return this.clicked;
+        if (this.toggle) return this.checked;
         else return this.mousedown;
     }
 
@@ -378,8 +378,8 @@ class Button {
                 if (!this.toggle) {
                     this.onChange(true);
                 } else {
-                    this.clicked = !this.clicked;
-                    this.onChange(this.clicked);
+                    this.checked = !this.checked;
+                    this.onChange(this.checked);
                 }
             }
         });
