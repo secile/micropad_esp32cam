@@ -328,7 +328,6 @@ class Button {
 
         // 状態。
         this.toggle = false;
-        this.checked = false;
         this.onChange = () => {}; // null guard.
 
         // マウスイベントのインストール。
@@ -338,6 +337,12 @@ class Button {
     get is_active() {
         if (this.toggle) return this.checked;
         else return this.mousedown;
+    }
+
+    get checked() { return this._checked; }
+    set checked(flag) {
+        this._checked = flag;
+        this.onChange(flag);
     }
 
     setPosition(x, y) {
@@ -379,7 +384,7 @@ class Button {
                     this.onChange(true);
                 } else {
                     this.checked = !this.checked;
-                    this.onChange(this.checked);
+                    //this.onChange(this.checked); executed in checked property set.
                 }
             }
         });
@@ -656,10 +661,9 @@ function initControl() {
         button1.setPosition(canvas.width * 0.2, canvas.height / 2 + stick1.height * 0.75);
     });
 
-    // Button 2.
+    // Button 2. (toggle)
     const button2 = new Button(canvas, context);
     button2.text = "Y";
-    button2.toggle = true;
     button2.onChange = (flag) => {
         const cmd = `b2,${flag? 1: 0},0`;
         sendCmd(cmd)
@@ -668,6 +672,10 @@ function initControl() {
     window.addEventListener('resize', () => {
         button2.setPosition(canvas.width * 0.8, canvas.height / 2 + stick2.height * 0.75);
     });
+    // toggle mode.
+    button2.toggle = true;
+    // set default value.
+    // button2.checked = true;
 
     // Slider.
     const slider1 = new Slider(canvas, context);
