@@ -44,6 +44,18 @@ ControlID is unique ID every control has it own. Value1 and Value2 is up to cont
     - Value2: '0'(reserved).
     - e.g. 's1, 0.7, 0'
 
+## about angle and power
+angle is radian angle clockwise from the X axis. power is distance from the origin.  
+
+<img src="https://github.com/user-attachments/assets/a59a97bc-c894-462d-9c60-d61ae9830750" width="35%" />
+
+you can deriver x and y from angle and power.
+
+```js
+const x = Math.cos(angle) * power;
+const y = Math.sin(angle) * power;
+```
+
 # coding on micro:bit.
 
 See my micro:bit MakeCode sample project.  
