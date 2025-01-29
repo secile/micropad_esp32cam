@@ -16,14 +16,24 @@ html {
     <div style="position:absolute; left:10px; top:10px;">
         <button type="button" id="connect"    onclick="connectBLE()">🚩</button>
         <button type="button" id="disconnect" onclick="disconnectBLE()" disabled>🛑</button>
+        <input  type="text"   id="txt_ipaddr" value="192.168.202.20">
+        <button type="button" id="btn_ipaddr" onclick="connectCamera()">表示</button>
     </div>
     <canvas id="canvas"></canvas>
-    <div style="position:absolute; left:50%; top:50%; transform: translate(-50%,-50%);">
-        <iframe id="esp32cam" src="http://192.168.202.20/" width="340" height="260"></iframe>
+    <div style="position:absolute; left:50%; top:75%; transform: translate(-50%,-50%);">
+        <iframe id="esp32cam" width="340" height="260"></iframe>
     </div>
 </body>
 
 <script>
+
+function connectCamera() {
+    const input = document.getElementById("txt_ipaddr").value;
+    if (input === "") return;
+    var url = "http://" + input;
+    document.getElementById("esp32cam").src = url;
+    console.log(url);
+}
 
 //--- connect with microbit via bluetooth.
 let isConnected = false;
