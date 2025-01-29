@@ -1,7 +1,7 @@
 # remotely control your micro:bit from smartphone via BLE (Bluetooth Low Energy).
 
 Download 'index.html' to your smartphone and open it,  
-or access URL https://secile.github.io/micropad/
+or access URL https://secile.github.io/micropad_esp32cam/
 
 You can see screen below.
 - Press '🚩' button to connect your micro:bit.
